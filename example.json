@@ -1,0 +1,44 @@
+{
+  "name": "LP3",
+  "eventName": "Lunatic Perilune #3",
+  "twitchAccountId": "197214728",
+  "obsCollection": "NYCFB",
+  "idleScene": "16:9 + players",
+  "breakScene": "generic break",
+  "endScene": "goodbye",
+  "games": [
+    {
+      "name": "UNI",
+      "title": "Under Night In-Birth",
+      "scoreboardId": "unist",
+      "twitchId": "Under Night In-Birth Exe:Late[cl-r]",
+      "scoreboardScene": "under-night overlay",
+      "breakScene": "pre-uni"
+    },
+    {
+      "name": "Melty",
+      "title": "Melty Blood",
+      "scoreboardId": "melty",
+      "twitchId": "Melty Blood: Actress Again: Current Code",
+      "scoreboardScene": "melty overlay",
+      "idleScene": "4:3 + players",
+      "breakScene": "pre-melty"
+    },
+    {
+      "name": "DFC",
+      "title": "Dengeki Bunko Fighting Climax",
+      "scoreboardId": "dfc",
+      "twitchId": "Dengeki Bunko: Fighting Climax Ignition",
+      "scoreboardScene": "dfc overlay",
+      "breakScene": "pre-dfc"
+    },
+    {
+      "name": "MBAC",
+      "title": "Melty Blood Act Cadenza",
+      "scoreboardId": "mbac",
+      "twitchId": "Melty Blood Act Cadenza Ver. B",
+      "scoreboardScene": "melty overlay",
+      "idleScene": "4:3 + players"
+    }
+  ]
+}
