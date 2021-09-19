@@ -128,24 +128,24 @@ function generateProfiles({
     },
   });
 
-  const prepActions = transpose(
-    games.slice(0, 5).map((game, index) => {
-      const gameBreak = obsScene({
-        title: `Pre-${game.name}`,
-        collection: obsCollection,
-        sceneName: game.breakScene || breakScene,
-      });
-      const twitchUpdate = twitchTitle({
-        title: game.name,
-        accountId: twitchAccountId,
-        streamTitle: `${eventName}: ${game.title}`,
-        streamGame: game.twitchId,
-      })
-      return [ null, gameBreak, twitchUpdate ];
-    })
+  const prepActions1 = prepActions(
+    games.slice(0, 5),
+    obsCollection,
+    breakScene,
+    twitchAccountId,
+    eventName,
+    stopRecording,
   );
-  prepActions[0][0] = back();
-  const prepFolder = profile({ name: 'Prep', actions: prepActions});
+  const prepFolder1 = profile({ name: 'Prep', actions: prepActions1});
+  const prepActions2 = prepActions(
+    games.slice(5, 10),
+    obsCollection,
+    breakScene,
+    twitchAccountId,
+    eventName,
+    stopRecording,
+  );
+  const prepFolder2 = profile({ name: 'Prep', actions: prepActions2});
   const gameProfiles = games.map(game => {
     const scoreboard = obsScene({
       title: game.name,
@@ -170,15 +170,40 @@ function generateProfiles({
   });
 
   const mainProfile = profile({ name, actions: [
-    [folder(prepFolder), wideShot, brb, goodbye],
+    [folder(prepFolder1), folder(prepFolder2), stopRecording, brb, goodbye],
     gameProfiles.slice(5, 10).map(folder),
     gameProfiles.slice(0, 5).map(folder),
   ]});
 
   return {
     mainProfile,
-    additionalProfiles: [ prepFolder, ...gameProfiles ],
+    additionalProfiles: [ prepFolder1, prepFolder2, ...gameProfiles ],
   };
+}
+
+function prepActions(games, obsCollection, breakScene, twitchAccountId, eventName, stopRecording) {
+  const prepActions = transpose(
+    games.map((game, index) => {
+      const gameBreak = obsScene({
+        title: `Pre-${game.name}`,
+        collection: obsCollection,
+        sceneName: game.breakScene || breakScene,
+      });
+      const twitchUpdate = twitchTitle({
+        title: game.name,
+        accountId: twitchAccountId,
+        streamTitle: `${eventName}: ${game.title}`,
+        streamGame: game.twitchId,
+      });
+      return [null, gameBreak, twitchUpdate];
+    })
+  );
+  if (prepActions.length == 0) {
+    prepActions[0] = [];
+  }
+  prepActions[0][0] = back();
+  prepActions[0][4] = stopRecording;
+  return prepActions;
 }
 
 /**
@@ -187,6 +212,9 @@ function generateProfiles({
  * @returns {T}
  */
 function transpose(matrix) {
+  if (matrix.length == 0) {
+    return matrix;
+  }
   return /** @type {T} */(matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex])));
 }
 
