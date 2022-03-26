@@ -4,6 +4,7 @@ const {
   profile,
   folder,
   obsScene,
+  obsSource,
   back,
   hotkey,
   twitchTitle,
@@ -22,14 +23,17 @@ const { writeToDisk } = require('./writeToDisk');
  *   twitchAccountId: string,
  *   obsCollection: string,
  *   idleScene: string,
+ *   commentaryScene?: string,
+ *   commentarySource?: string,
  *   breakScene: string,
  *   endScene: string,
  *   games: {
  *     name: string,
  *     title: string,
- *     scoreboardId: string,
+ *     scoreboardId?: string,
  *     twitchId: string,
  *     scoreboardScene: string,
+ *     scoreboardSource?: string,
  *     idleScene?: string,
  *     breakScene?: string,
  *   }[];
@@ -45,6 +49,8 @@ function generateProfiles({
   twitchAccountId,
   obsCollection,
   idleScene,
+  commentaryScene = 'commentators',
+  commentarySource,
   breakScene,
   endScene,
   games,
@@ -72,7 +78,7 @@ function generateProfiles({
   const commentary = obsScene({
     title: 'Commentary',
     collection: obsCollection,
-    sceneName: 'commentators',
+    sceneName: commentaryScene || 'commentators',
   });
   const info = obsScene({
     title: 'Info',
@@ -89,10 +95,12 @@ function generateProfiles({
     collection: obsCollection,
     sceneName: 'shill',
   });
-  const toggleCommentators = webRequestWebSocket({
+  const toggleCommentators = overlayToggle({
     title: 'Toggle\nCommentator\nNames',
-    url: 'ws://localhost:58585',
-    body: JSON.stringify({ 'namespace': 'commentators', 'type': 'toggle' }, null, 2),
+    obsCollection,
+    overlayScene: commentaryScene,
+    overlaySource: commentarySource,
+    overlayId: commentarySource ? undefined : 'commentators',
   });
   const startRecording = webRequestHttp({
     title: 'Start\nRecording',
@@ -152,10 +160,12 @@ function generateProfiles({
       collection: obsCollection,
       sceneName: game.scoreboardScene,
     });
-    const toggleScoreboard = webRequestWebSocket({
+    const toggleScoreboard = overlayToggle({
       title: 'Toggle\nScorebaord',
-      url: 'ws://localhost:58585',
-      body: JSON.stringify({ 'namespace': game.scoreboardId, 'type': 'toggle' }, null, 2),
+      obsCollection,
+      overlayScene: game.scoreboardScene,
+      overlaySource: game.scoreboardSource,
+      overlayId: game.scoreboardId,
     });
     const idle = !game.idleScene ? defaultIdle : obsScene({
       title: 'Idle',
@@ -179,6 +189,37 @@ function generateProfiles({
     mainProfile,
     additionalProfiles: [ prepFolder1, prepFolder2, ...gameProfiles ],
   };
+}
+
+/**
+ * @param {{
+ *   title: string,
+ *   obsCollection: string,
+ *   overlayScene: string,
+ *   overlaySource?: string,
+ *   overlayId?: string,
+ * }} params
+ * @returns {Action|null}
+ */
+function overlayToggle({
+  title,
+  obsCollection,
+  overlayScene,
+  overlaySource,
+  overlayId,
+}) {
+  return overlayId && webRequestWebSocket({
+      title,
+      url: 'ws://localhost:58585',
+      body: JSON.stringify({ 'namespace': overlayId, 'type': 'toggle' }, null, 2)
+    })
+    || overlaySource && obsSource({
+      title,
+      collection: obsCollection,
+      sceneName: overlayScene,
+      sourceName: overlaySource
+    })
+    || null;
 }
 
 function prepActions(games, obsCollection, breakScene, twitchAccountId, eventName, stopRecording) {

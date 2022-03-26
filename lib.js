@@ -45,6 +45,36 @@ function obsScene({
 /**
  * @param {{
  *   title: string,
+ *   collection: string,
+ *   sceneName: string,
+ *   sourceName: string,
+ * }} config
+ * @returns {Action}
+ */
+function obsSource({
+  title,
+  collection,
+  sceneName,
+  sourceName,
+}) {
+  return action({
+    name: 'Scene',
+    title,
+    uuid: 'com.elgato.streamdeck.obs.source',
+    numStates: 2,
+    state: 0,
+    settings: {
+      'sceneCollection': collection,
+      'sceneId': collection + sceneName,
+      'sceneItemId': '',
+      'sourceId': collection + sourceName,
+    },
+  });
+}
+
+/**
+ * @param {{
+ *   title: string,
  *   accountId: string,
  *   streamTitle: string,
  *   streamGame: string,
@@ -266,7 +296,7 @@ function action({
 /**
  * @param {{
  *   name: string,
- *   actions: (Action | null)[][]
+ *   actions: (Action | null | undefined)[][]
  * }} config
  * @returns {Profile}
  */
@@ -306,6 +336,7 @@ function uuidV4() {
 
 module.exports = {
   obsScene,
+  obsSource,
   twitchTitle,
   webRequestHttp,
   webRequestWebSocket,
