@@ -1,0 +1,25 @@
+{
+  "name": "streamdeck-profile-generator",
+  "version": "0.0.1",
+  "description": "An example app to programmatically generate profiles for the Elgato Stream Deck",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/data-enabler/streamdeck-profile-generator.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/data-enabler/streamdeck-profile-generator/issues"
+  },
+  "homepage": "https://github.com/data-enabler/streamdeck-profile-generator#readme",
+  "dependencies": {
+    "jszip": "^3.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7"
+  }
+}

@@ -1,5 +1,4 @@
-const { mkdirSync, writeFileSync, readFileSync } = require('fs');
-const { join } = require('path');
+const { readFileSync } = require('fs');
 const { exit } = require('process');
 const {
   profile,
@@ -11,6 +10,7 @@ const {
   webRequestHttp,
   webRequestWebSocket
 } = require('./lib');
+const { writeToDisk } = require('./writeToDisk');
 
 /** @typedef {import('./lib').Profile} Profile */
 /** @typedef {import('./lib').Action} Action */
@@ -216,28 +216,6 @@ function transpose(matrix) {
     return matrix;
   }
   return /** @type {T} */(matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex])));
-}
-
-/**
- * @param {{
- *   mainProfile: Profile,
- *   additionalProfiles: Profile[],
- * }} profiles
- */
-function writeToDisk({
-  mainProfile,
-  additionalProfiles,
-}) {
-  const rootDir = `${mainProfile.uuid}.sdProfile`;
-  const profilesDir = join(rootDir, 'Profiles');
-  mkdirSync(rootDir);
-  mkdirSync(profilesDir);
-  writeFileSync(join(rootDir, 'manifest.json'), JSON.stringify(mainProfile.manifest));
-  for (const profile of additionalProfiles) {
-    const profileDir = join(profilesDir, `${profile.uuid}.sdProfile`);
-    mkdirSync(profileDir);
-    writeFileSync(join(profileDir, 'manifest.json'), JSON.stringify(profile.manifest));
-  }
 }
 
 const configFile = process.argv[2];
