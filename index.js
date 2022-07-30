@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const { readFileSync } = require('fs');
 const { exit } = require('process');
 const {
@@ -15,6 +16,40 @@ const { writeToDisk } = require('./writeToDisk');
 
 /** @typedef {import('./lib').Profile} Profile */
 /** @typedef {import('./lib').Action} Action */
+
+const detocsStartRecording = webRequestHttp({
+  title: 'Start\nRecording',
+  method: 'GET',
+  url: 'http://localhost:58587/start',
+});
+const detocsStopRecording = webRequestHttp({
+  title: 'Stop\nRecording',
+  method: 'GET',
+  url: 'http://localhost:58587/stop',
+});
+const detocsClip15s = webRequestHttp({
+  title: 'Clip',
+  method: 'GET',
+  url: 'http://localhost:58590/clip?seconds=15',
+});
+const detocsScreenshot = webRequestHttp({
+  title: 'Screenshot',
+  method: 'GET',
+  url: 'http://localhost:58590/screenshot',
+});
+const nextPromoHotkey = hotkey({
+  title: 'Next\nPromotion',
+  hotkey: {
+    "KeyCmd": false,
+    "KeyCtrl": false,
+    "KeyModifiers": 4,
+    "KeyOption": true,
+    "KeyShift": false,
+    "NativeCode": 221,
+    "QTKeyCode": 93,
+    "VKeyCode": 221
+  },
+});
 
 /**
  * @param {{
@@ -47,7 +82,7 @@ function generateProfiles({
   name,
   eventName,
   twitchAccountId,
-  obsCollection,
+  obsCollection: collection,
   idleScene,
   commentaryScene = 'commentators',
   commentarySource,
@@ -55,132 +90,68 @@ function generateProfiles({
   endScene,
   games,
 }) {
-  const defaultIdle = obsScene({
-    title: 'Idle',
-    collection: obsCollection,
-    sceneName: idleScene,
-  });
-  const brb = obsScene({
-    title: 'BRB',
-    collection: obsCollection,
-    sceneName: breakScene,
-  });
-  const goodbye = obsScene({
-    title: 'Goodbye',
-    collection: obsCollection,
-    sceneName: endScene,
-  });
-  const wideShot = obsScene({
-    title: 'Venue',
-    collection: obsCollection,
-    sceneName: 'venue',
-  });
-  const commentary = obsScene({
-    title: 'Commentary',
-    collection: obsCollection,
-    sceneName: commentaryScene || 'commentators',
-  });
-  const info = obsScene({
-    title: 'Info',
-    collection: obsCollection,
-    sceneName: 'info',
-  });
-  const promo = obsScene({
-    title: 'Promo',
-    collection: obsCollection,
-    sceneName: 'promo',
-  });
-  const shill = obsScene({
-    title: 'Shill',
-    collection: obsCollection,
-    sceneName: 'shill',
-  });
+  const defaultIdle = obsScene({ title: 'Idle', collection, sceneName: idleScene });
+  const brb = obsScene({ title: 'BRB', collection, sceneName: breakScene });
+  const goodbye = obsScene({ title: 'Goodbye', collection, sceneName: endScene });
+  const wideShot = obsScene({ title: 'Venue', collection, sceneName: 'venue' });
+  const commentary = obsScene({ title: 'Commentary', collection, sceneName: commentaryScene });
+  const info = obsScene({ title: 'Info', collection, sceneName: 'info' });
+  const promo = obsScene({ title: 'Promo', collection, sceneName: 'promo' });
+  const shill = obsScene({ title: 'Shill', collection, sceneName: 'shill' });
+
   const toggleCommentators = overlayToggle({
     title: 'Toggle\nCommentator\nNames',
-    obsCollection,
+    obsCollection: collection,
     overlayScene: commentaryScene,
     overlaySource: commentarySource,
     overlayId: commentarySource ? undefined : 'commentators',
   });
-  const startRecording = webRequestHttp({
-    title: 'Start\nRecording',
-    method: 'GET',
-    url: 'http://localhost:58587/start',
-  });
-  const stopRecording = webRequestHttp({
-    title: 'Stop\nRecording',
-    method: 'GET',
-    url: 'http://localhost:58587/stop',
-  });
-  const clip = webRequestHttp({
-    title: 'Clip',
-    method: 'GET',
-    url: 'http://localhost:58590/clip?seconds=15',
-  });
-  const screenshot = webRequestHttp({
-    title: 'Screenshot',
-    method: 'GET',
-    url: 'http://localhost:58590/screenshot',
-  });
-  const nextPromo = hotkey({
-    title: 'Next\nPromotion',
-    hotkey: {
-      "KeyCmd": false,
-      "KeyCtrl": false,
-      "KeyModifiers": 4,
-      "KeyOption": true,
-      "KeyShift": false,
-      "NativeCode": 221,
-      "QTKeyCode": 93,
-      "VKeyCode": 221
-    },
-  });
 
   const prepActions1 = prepActions(
     games.slice(0, 5),
-    obsCollection,
+    collection,
     breakScene,
     twitchAccountId,
     eventName,
-    stopRecording,
+    detocsStopRecording,
   );
   const prepFolder1 = profile({ name: 'Prep', actions: prepActions1});
   const prepActions2 = prepActions(
     games.slice(5, 10),
-    obsCollection,
+    collection,
     breakScene,
     twitchAccountId,
     eventName,
-    stopRecording,
+    detocsStopRecording
   );
   const prepFolder2 = profile({ name: 'Prep', actions: prepActions2});
   const gameProfiles = games.map(game => {
     const scoreboard = obsScene({
       title: game.name,
-      collection: obsCollection,
+      collection,
       sceneName: game.scoreboardScene,
     });
     const toggleScoreboard = overlayToggle({
       title: 'Toggle\nScorebaord',
-      obsCollection,
+      obsCollection: collection,
       overlayScene: game.scoreboardScene,
       overlaySource: game.scoreboardSource,
       overlayId: game.scoreboardId,
     });
     const idle = !game.idleScene ? defaultIdle : obsScene({
       title: 'Idle',
-      collection: obsCollection,
+      collection,
       sceneName: game.idleScene,
     });
     return profile({ name: game.name, actions: [
-      [ back(), commentary, toggleCommentators, promo, nextPromo ],
-      [ toggleScoreboard, wideShot, stopRecording, shill, screenshot ],
-      [ scoreboard, idle, startRecording, info, clip ],
+      [ back(), commentary, toggleCommentators, promo, nextPromoHotkey ],
+      [ toggleScoreboard, wideShot, detocsStopRecording, shill, detocsScreenshot ],
+      [ scoreboard, idle, detocsStartRecording, info, detocsClip15s ],
     ]});
   });
 
   const mainProfile = profile({ name, actions: [
-    [folder(prepFolder1), folder(prepFolder2), stopRecording, brb, goodbye],
+    [folder(prepFolder1), folder(prepFolder2), detocsStopRecording, brb, goodbye],
     gameProfiles.slice(5, 10).map(folder),
     gameProfiles.slice(0, 5).map(folder),
   ]});
@@ -188,6 +159,121 @@ function generateProfiles({
   return {
     mainProfile,
     additionalProfiles: [ prepFolder1, prepFolder2, ...gameProfiles ],
+  };
+}
+
+/**
+ * @param {{
+ *   name: string,
+ *   eventName: string,
+ *   twitchAccountId: string,
+ *   obsCollection: string,
+ *   idleScene: string,
+ *   commentaryScene?: string,
+ *   commentarySource?: string,
+ *   breakScene: string,
+ *   endScene: string,
+ *   games: {
+ *     name: string,
+ *     title: string,
+ *     scoreboardId?: string,
+ *     twitchId: string,
+ *     scoreboardScene: string,
+ *     scoreboardSource?: string,
+ *     idleScene?: string,
+ *     breakScene?: string,
+ *   }[];
+ * }} config
+ * @returns {{
+ *   mainProfile: Profile,
+ *   additionalProfiles: Profile[],
+ * }}
+ */
+function fiveASide({
+  name,
+  obsCollection: collection,
+  idleScene,
+  commentaryScene = 'commentators',
+  commentarySource,
+  breakScene,
+  endScene,
+  games,
+}) {
+  const teamNyCards = [
+    [ 'B RICH', '4' ],
+    [ 'FEAR', '7' ],
+    [ 'HAEZL', '12' ],
+    [ 'MR FLUBBS', '9' ],
+    [ 'PEPPERBEEF2SPICY', '10' ],
+  ];
+  const teamAtlCards = [
+    [ 'ABSTRACT', '3' ],
+    [ 'DEUTSCHNOZZLE', '5' ],
+    [ 'DEZ IS TRASH', '6' ],
+    [ 'GENGHIS DON', '8' ],
+    [ 'RUNITBACKEDDIE', '11' ],
+  ];
+
+  /**
+   * @param {[string, string]} nameAndId
+   * @returns {Action}
+   */
+  function playerCard(nameAndId) {
+    return obsSource({
+      title: nameAndId[0],
+      collection,
+      sceneName: "player cards",
+      sourceName: nameAndId[0],
+      itemId: nameAndId[1],
+    });
+  }
+
+  const idle = obsScene({ title: 'Idle', collection, sceneName: idleScene });
+  const player1 = obsScene({ title: 'Player 1', collection, sceneName: 'player 1' });
+  const player2 = obsScene({ title: 'Player 2', collection, sceneName: 'player 2' });
+  const wideShot = obsScene({ title: 'Wide', collection, sceneName: 'players' });
+  const venue = obsScene({ title: 'Venue', collection, sceneName: 'venue' });
+  const commentary = obsScene({ title: 'Commentary', collection, sceneName: commentaryScene || 'commentators' });
+  const info = obsScene({ title: 'Info', collection, sceneName: 'info' });
+  const cards = obsScene({ title: 'Cards', collection, sceneName: 'player cards' });
+  const promo = obsScene({ title: 'Promo', collection, sceneName: 'promo' });
+  const promoVid = obsScene({ title: 'Promo\nVid', collection, sceneName: 'promo video' });
+  const announce = obsScene({ title: 'Announce', collection, sceneName: 'announcement' });
+  const brb = obsScene({ title: 'Break', collection, sceneName: breakScene });
+  const goodbye = obsScene({ title: 'Goodbye', collection, sceneName: endScene });
+
+  const toggleCommentators = overlayToggle({
+    title: 'Toggle\nCommentator\nNames',
+    obsCollection: collection,
+    overlayScene: commentaryScene,
+    overlaySource: commentarySource,
+    overlayId: commentarySource ? undefined : 'commentators',
+  });
+
+  const game = games[0];
+  const scoreboard = obsScene({
+    title: game.name,
+    collection,
+    sceneName: game.scoreboardScene,
+  });
+  const toggleScoreboard = overlayToggle({
+    title: 'Toggle\nScorebaord',
+    obsCollection: collection,
+    overlayScene: game.scoreboardScene,
+    overlaySource: game.scoreboardSource,
+    overlayId: game.scoreboardId,
+  });
+
+  const mainProfile = profile({ name, actions: [
+    [ player1, player2, null, ...teamNyCards.map(playerCard)],
+    [ venue, commentary, toggleCommentators, ...teamAtlCards.map(playerCard)],
+    [ toggleScoreboard, wideShot, detocsStopRecording, info, cards, promo, promoVid, nextPromoHotkey ],
+    [ scoreboard, idle, detocsStartRecording, detocsClip15s, detocsScreenshot, announce, brb, goodbye ],
+  ]});
+
+  return {
+    mainProfile,
+    additionalProfiles: [],
   };
 }
 
@@ -264,6 +350,20 @@ if (!configFile) {
   console.error('Please provide a path to a config file');
   exit(1);
 }
+
+const generators = {
+  "fiveASide": fiveASide
+};
+let generateFn = generateProfiles;
+const generatorName = process.argv[3];
+if (generatorName) {
+  generateFn = generators[generatorName];
+  if (!generateFn) {
+    console.error(`Generation function ${generatorName} not found`);
+    exit(1);
+  }
+}
+
 const config = JSON.parse(readFileSync(configFile, { encoding: 'utf8'}));
-const profiles = generateProfiles(config);
+const profiles = generateFn(config);
 writeToDisk(profiles);

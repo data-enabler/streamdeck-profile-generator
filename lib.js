@@ -48,6 +48,7 @@ function obsScene({
  *   collection: string,
  *   sceneName: string,
  *   sourceName: string,
+ *   itemId?: string,
  * }} config
  * @returns {Action}
  */
@@ -56,6 +57,7 @@ function obsSource({
   collection,
   sceneName,
   sourceName,
+  itemId = '',
 }) {
   return action({
     name: 'Scene',
@@ -66,7 +68,7 @@ function obsSource({
     settings: {
       'sceneCollection': collection,
       'sceneId': collection + sceneName,
-      'sceneItemId': '',
+      'sceneItemId': itemId,
       'sourceId': collection + sourceName,
     },
   });
