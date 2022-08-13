@@ -365,5 +365,9 @@ if (generatorName) {
 }
 
 const config = JSON.parse(readFileSync(configFile, { encoding: 'utf8'}));
-const profiles = generateFn(config);
-writeToDisk(profiles);
+try {
+  const profiles = generateFn(config);
+  writeToDisk(profiles);
+} catch (error) {
+  console.error(error.message);
+}

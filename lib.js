@@ -89,6 +89,9 @@ function twitchTitle({
   streamTitle,
   streamGame,
 }) {
+  if (streamTitle.length > 50) {
+    throw new Error(`Twitch title "${streamTitle}" is too long to set via Stream Deck`);
+  }
   return action({
     name: 'Stream/Game Title',
     title,
