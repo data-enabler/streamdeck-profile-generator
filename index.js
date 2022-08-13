@@ -54,6 +54,8 @@ const nextPromoHotkey = hotkey({
 /**
  * @param {{
  *   name: string,
+ *   deviceWidth: number,
+ *   deviceHeight: number,
  *   eventName: string,
  *   twitchAccountId: string,
  *   obsCollection: string,
@@ -80,6 +82,8 @@ const nextPromoHotkey = hotkey({
  */
 function generateProfiles({
   name,
+  deviceWidth,
+  deviceHeight,
   eventName,
   twitchAccountId,
   obsCollection: collection,
@@ -108,7 +112,7 @@ function generateProfiles({
   });
 
   const prepActions1 = prepActions(
-    games.slice(0, 5),
+    games.slice(0, deviceWidth),
     collection,
     breakScene,
     twitchAccountId,
@@ -117,7 +121,7 @@ function generateProfiles({
   );
   const prepFolder1 = profile({ name: 'Prep', actions: prepActions1});
   const prepActions2 = prepActions(
-    games.slice(5, 10),
+    games.slice(deviceWidth, deviceWidth * 2),
     collection,
     breakScene,
     twitchAccountId,
@@ -143,17 +147,21 @@ function generateProfiles({
       collection,
       sceneName: game.idleScene,
     });
-    return profile({ name: game.name, actions: [
-      [ back(), commentary, toggleCommentators, promo, nextPromoHotkey ],
-      [ toggleScoreboard, wideShot, detocsStopRecording, shill, detocsScreenshot ],
-      [ scoreboard, idle, detocsStartRecording, info, detocsClip15s ],
-    ]});
+    const actions = [
+      ...repeat(deviceHeight - 3, []),
+      [null, commentary, toggleCommentators, promo, nextPromoHotkey],
+      [toggleScoreboard, wideShot, detocsStopRecording, shill, detocsScreenshot],
+      [scoreboard, idle, detocsStartRecording, info, detocsClip15s],
+    ];
+    actions[0][0] = back();
+    return profile({ name: game.name, actions});
   });
 
   const mainProfile = profile({ name, actions: [
-    [folder(prepFolder1), folder(prepFolder2), detocsStopRecording, brb, goodbye],
-    gameProfiles.slice(5, 10).map(folder),
-    gameProfiles.slice(0, 5).map(folder),
+    [folder(prepFolder1), folder(prepFolder2), ...repeat(deviceWidth - 5, null), detocsStopRecording, brb, goodbye],
+    ...repeat(deviceHeight - 3, []),
+    gameProfiles.slice(deviceWidth, deviceWidth * 2).map(folder),
+    gameProfiles.slice(0, deviceWidth).map(folder),
   ]});
 
   return {
@@ -345,6 +353,19 @@ function transpose(matrix) {
   return /** @type {T} */(matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex])));
 }
 
+/**
+ * @template T
+ * @param {number} times
+ * @param {T} value
+ * @returns {!Array<T>}
+ */
+function repeat(times, value) {
+  if (times < 0) {
+    return [];
+  }
+  return Array(times).fill(value);
+}
+
 const configFile = process.argv[2];
 if (!configFile) {
   console.error('Please provide a path to a config file');
@@ -356,7 +377,7 @@ const generators = {
 };
 let generateFn = generateProfiles;
 const generatorName = process.argv[3];
-if (generatorName) {
+if (generatorName && !generatorName.startsWith('-')) {
   generateFn = generators[generatorName];
   if (!generateFn) {
     console.error(`Generation function ${generatorName} not found`);
@@ -365,8 +386,16 @@ if (generatorName) {
 }
 
 const config = JSON.parse(readFileSync(configFile, { encoding: 'utf8'}));
+const isXl = process.argv.includes('--xl');
+const deviceWidth = isXl ? 8 : 5;
+const deviceHeight = isXl ? 4 : 3;
+
 try {
-  const profiles = generateFn(config);
+  const profiles = generateFn({
+    deviceWidth,
+    deviceHeight,
+    ...config
+  });
   writeToDisk(profiles);
 } catch (error) {
   console.error(error.message);
