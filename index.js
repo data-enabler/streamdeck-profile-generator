@@ -207,20 +207,8 @@ function fiveASide({
   endScene,
   games,
 }) {
-  const teamNyCards = [
-    [ 'B RICH', '4' ],
-    [ 'FEAR', '7' ],
-    [ 'HAEZL', '12' ],
-    [ 'MR FLUBBS', '9' ],
-    [ 'PEPPERBEEF2SPICY', '10' ],
-  ];
-  const teamAtlCards = [
-    [ 'ABSTRACT', '3' ],
-    [ 'DEUTSCHNOZZLE', '5' ],
-    [ 'DEZ IS TRASH', '6' ],
-    [ 'GENGHIS DON', '8' ],
-    [ 'RUNITBACKEDDIE', '11' ],
-  ];
+  const teamNyCards = [];
+  const teamAtlCards = [];
 
   /**
    * @param {[string, string]} nameAndId
@@ -275,8 +263,8 @@ function fiveASide({
   const mainProfile = profile({ name, actions: [
     [ player1, player2, null, ...teamNyCards.map(playerCard)],
     [ venue, commentary, toggleCommentators, ...teamAtlCards.map(playerCard)],
-    [ toggleScoreboard, wideShot, detocsStopRecording, info, cards, promo, promoVid, nextPromoHotkey ],
-    [ scoreboard, idle, detocsStartRecording, detocsClip15s, detocsScreenshot, announce, brb, goodbye ],
+    [ toggleScoreboard, wideShot, detocsStopRecording, info, null, promo, null, nextPromoHotkey ],
+    [ scoreboard, idle, detocsStartRecording, detocsClip15s, detocsScreenshot, null, brb, goodbye ],
   ]});
 
   return {
