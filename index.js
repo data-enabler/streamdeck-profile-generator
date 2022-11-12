@@ -275,6 +275,120 @@ function fiveASide({
 
 /**
  * @param {{
+ *   name: string,
+ *   eventName: string,
+ *   twitchAccountId: string,
+ *   obsCollection: string,
+ *   idleScene: string,
+ *   commentaryScene?: string,
+ *   commentarySource?: string,
+ *   breakScene: string,
+ *   endScene: string,
+ *   games: {
+ *     name: string,
+ *     title: string,
+ *     scoreboardId?: string,
+ *     twitchId: string,
+ *     scoreboardScene: string,
+ *     scoreboardSource?: string,
+ *     idleScene?: string,
+ *     breakScene?: string,
+ *   }[];
+ * }} config
+ * @returns {{
+ *   mainProfile: Profile,
+ *   additionalProfiles: Profile[],
+ * }}
+ */
+function hkc({
+  name,
+  obsCollection: collection,
+  idleScene,
+  commentaryScene = 'commentators',
+  commentarySource,
+  breakScene,
+  endScene,
+  games,
+}) {
+  const team1Cards = [
+    [ 'EL PROMESA', '4' ],
+    [ 'JAMES JR', '7' ],
+    [ 'KIZZERCRATE', '12' ],
+    [ 'LEONULTIMATE', '9' ],
+    [ 'MOONYBLUES', '10' ],
+  ];
+  const team2Cards = [
+    [ 'COACH STEVE', '3' ],
+    [ 'DINOTAIL', '5' ],
+    [ 'INOFFENSIVE', '6' ],
+    [ 'PACHUKOF', '8' ],
+  ];
+
+  /**
+   * @param {[string, string]} nameAndId
+   * @returns {Action}
+   */
+  function playerCard(nameAndId) {
+    return obsSource({
+      title: nameAndId[0],
+      collection,
+      sceneName: "player cards",
+      sourceName: nameAndId[0],
+      itemId: nameAndId[1],
+    });
+  }
+
+  const idle = obsScene({ title: 'Idle', collection, sceneName: idleScene });
+  const player1 = obsScene({ title: 'Player 1', collection, sceneName: 'player 1' });
+  const player2 = obsScene({ title: 'Player 2', collection, sceneName: 'player 2' });
+  const wideShot = obsScene({ title: 'Wide', collection, sceneName: 'players' });
+  const venue = obsScene({ title: 'Venue', collection, sceneName: 'venue' });
+  const commentary = obsScene({ title: 'Commentary', collection, sceneName: commentaryScene || 'commentators' });
+  const info = obsScene({ title: 'Info', collection, sceneName: 'info' });
+  const cards = obsScene({ title: 'Cards', collection, sceneName: 'player cards' });
+  const promo = obsScene({ title: 'Promo', collection, sceneName: 'promo' });
+  const promoVid = obsScene({ title: 'Promo\nVid', collection, sceneName: 'promo video' });
+  const announce = obsScene({ title: 'Announce', collection, sceneName: 'announcement' });
+  const brb = obsScene({ title: 'Break', collection, sceneName: breakScene });
+  const goodbye = obsScene({ title: 'Goodbye', collection, sceneName: endScene });
+
+  const toggleCommentators = overlayToggle({
+    title: 'Toggle\nCommentator\nNames',
+    obsCollection: collection,
+    overlayScene: commentaryScene,
+    overlaySource: commentarySource,
+    overlayId: commentarySource ? undefined : 'commentators',
+  });
+
+  const game = games[0];
+  const scoreboard = obsScene({
+    title: game.name,
+    collection,
+    sceneName: game.scoreboardScene,
+  });
+  const toggleScoreboard = overlayToggle({
+    title: 'Toggle\nScorebaord',
+    obsCollection: collection,
+    overlayScene: game.scoreboardScene,
+    overlaySource: game.scoreboardSource,
+    overlayId: game.scoreboardId,
+  });
+
+  const mainProfile = profile({ name, actions: [
+    [ player1, player2, null, ...team1Cards.map(playerCard)],
+    [ venue, commentary, toggleCommentators, ...team2Cards.map(playerCard)],
+    [ toggleScoreboard, wideShot, detocsStopRecording, info, cards, promo, null, nextPromoHotkey ],
+    [ scoreboard, idle, detocsStartRecording, detocsClip15s, detocsScreenshot, null, brb, goodbye ],
+  ]});
+
+  return {
+    mainProfile,
+    additionalProfiles: [],
+  };
+}
+
+/**
+ * @param {{
  *   title: string,
  *   obsCollection: string,
  *   overlayScene: string,
@@ -361,7 +475,8 @@ if (!configFile) {
 }
 
 const generators = {
-  "fiveASide": fiveASide
+  'fiveASide': fiveASide,
+  'hkc': hkc,
 };
 let generateFn = generateProfiles;
 const generatorName = process.argv[3];
