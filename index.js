@@ -102,6 +102,7 @@ function generateProfiles({
   const info = obsScene({ title: 'Info', collection, sceneName: 'info' });
   const promo = obsScene({ title: 'Promo', collection, sceneName: 'promo' });
   const shill = obsScene({ title: 'Shill', collection, sceneName: 'shill' });
+  const replay = obsScene({ title: 'Replay', collection, sceneName: 'replay' });
 
   const toggleCommentators = overlayToggle({
     title: 'Toggle\nCommentator\nNames',
@@ -148,7 +149,7 @@ function generateProfiles({
       sceneName: game.idleScene,
     });
     const actions = [
-      ...repeat(deviceHeight - 3, []),
+      ...repeat(deviceHeight - 3, [null, replay]),
       [null, commentary, toggleCommentators, promo, nextPromoHotkey],
       [toggleScoreboard, wideShot, detocsStopRecording, shill, detocsScreenshot],
       [scoreboard, idle, detocsStartRecording, info, detocsClip15s],
