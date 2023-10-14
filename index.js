@@ -2,8 +2,6 @@
 const { readFileSync } = require('fs');
 const { exit } = require('process');
 const {
-  profile,
-  folder,
   obsScene,
   obsSource,
   back,
@@ -11,11 +9,12 @@ const {
   twitchTitle,
   webRequestHttp,
   webRequestWebSocket
-} = require('./lib');
-const { writeToDisk } = require('./writeToDisk');
+} = require('./lib/actions');
+const { profile, folder } = require('./lib/profile');
+const { writeToDisk } = require('./lib/writeToDisk');
 
-/** @typedef {import('./lib').Profile} Profile */
-/** @typedef {import('./lib').Action} Action */
+/** @typedef {import('./lib/profile').Profile} Profile */
+/** @typedef {import('./lib/actions').Action} Action */
 
 const detocsStartRecording = webRequestHttp({
   title: 'Start\nRecording',
@@ -94,15 +93,15 @@ function generateProfiles({
   endScene,
   games,
 }) {
-  const defaultIdle = obsScene({ title: 'Idle', collection, sceneName: idleScene });
-  const brb = obsScene({ title: 'BRB', collection, sceneName: breakScene });
-  const goodbye = obsScene({ title: 'Goodbye', collection, sceneName: endScene });
-  const wideShot = obsScene({ title: 'Venue', collection, sceneName: 'venue' });
-  const commentary = obsScene({ title: 'Commentary', collection, sceneName: commentaryScene });
-  const info = obsScene({ title: 'Info', collection, sceneName: 'info' });
-  const promo = obsScene({ title: 'Promo', collection, sceneName: 'promo' });
-  const shill = obsScene({ title: 'Shill', collection, sceneName: 'shill' });
-  const replay = obsScene({ title: 'Replay', collection, sceneName: 'replay' });
+  const defaultIdle = obsScene({ title: 'Idle', target: 'program', sceneName: idleScene });
+  const brb = obsScene({ title: 'BRB', target: 'program', sceneName: breakScene });
+  const goodbye = obsScene({ title: 'Goodbye', target: 'program', sceneName: endScene });
+  const wideShot = obsScene({ title: 'Venue', target: 'program', sceneName: 'venue' });
+  const commentary = obsScene({ title: 'Commentary', target: 'program', sceneName: commentaryScene });
+  const info = obsScene({ title: 'Info', target: 'program', sceneName: 'info' });
+  const promo = obsScene({ title: 'Promo', target: 'program', sceneName: 'promo' });
+  const shill = obsScene({ title: 'Shill', target: 'program', sceneName: 'shill' });
+  const replay = obsScene({ title: 'Replay', target: 'program', sceneName: 'replay' });
 
   const toggleCommentators = overlayToggle({
     title: 'Toggle\nCommentator\nNames',
@@ -133,7 +132,7 @@ function generateProfiles({
   const gameProfiles = games.map(game => {
     const scoreboard = obsScene({
       title: game.name,
-      collection,
+      target: 'program',
       sceneName: game.scoreboardScene,
     });
     const toggleScoreboard = overlayToggle({
@@ -145,7 +144,7 @@ function generateProfiles({
     });
     const idle = !game.idleScene ? defaultIdle : obsScene({
       title: 'Idle',
-      collection,
+      target: 'program',
       sceneName: game.idleScene,
     });
     const actions = [
@@ -225,19 +224,19 @@ function fiveASide({
     });
   }
 
-  const idle = obsScene({ title: 'Idle', collection, sceneName: idleScene });
-  const player1 = obsScene({ title: 'Player 1', collection, sceneName: 'player 1' });
-  const player2 = obsScene({ title: 'Player 2', collection, sceneName: 'player 2' });
-  const wideShot = obsScene({ title: 'Wide', collection, sceneName: 'players' });
-  const venue = obsScene({ title: 'Venue', collection, sceneName: 'venue' });
-  const commentary = obsScene({ title: 'Commentary', collection, sceneName: commentaryScene || 'commentators' });
-  const info = obsScene({ title: 'Info', collection, sceneName: 'info' });
-  const cards = obsScene({ title: 'Cards', collection, sceneName: 'player cards' });
-  const promo = obsScene({ title: 'Promo', collection, sceneName: 'promo' });
-  const promoVid = obsScene({ title: 'Promo\nVid', collection, sceneName: 'promo video' });
-  const announce = obsScene({ title: 'Announce', collection, sceneName: 'announcement' });
-  const brb = obsScene({ title: 'Break', collection, sceneName: breakScene });
-  const goodbye = obsScene({ title: 'Goodbye', collection, sceneName: endScene });
+  const idle = obsScene({ title: 'Idle', target: 'program', sceneName: idleScene });
+  const player1 = obsScene({ title: 'Player 1', target: 'program', sceneName: 'player 1' });
+  const player2 = obsScene({ title: 'Player 2', target: 'program', sceneName: 'player 2' });
+  const wideShot = obsScene({ title: 'Wide', target: 'program', sceneName: 'players' });
+  const venue = obsScene({ title: 'Venue', target: 'program', sceneName: 'venue' });
+  const commentary = obsScene({ title: 'Commentary', target: 'program', sceneName: commentaryScene || 'commentators' });
+  const info = obsScene({ title: 'Info', target: 'program', sceneName: 'info' });
+  const cards = obsScene({ title: 'Cards', target: 'program', sceneName: 'player cards' });
+  const promo = obsScene({ title: 'Promo', target: 'program', sceneName: 'promo' });
+  const promoVid = obsScene({ title: 'Promo\nVid', target: 'program', sceneName: 'promo video' });
+  const announce = obsScene({ title: 'Announce', target: 'program', sceneName: 'announcement' });
+  const brb = obsScene({ title: 'Break', target: 'program', sceneName: breakScene });
+  const goodbye = obsScene({ title: 'Goodbye', target: 'program', sceneName: endScene });
 
   const toggleCommentators = overlayToggle({
     title: 'Toggle\nCommentator\nNames',
@@ -250,7 +249,7 @@ function fiveASide({
   const game = games[0];
   const scoreboard = obsScene({
     title: game.name,
-    collection,
+    target: 'program',
     sceneName: game.scoreboardScene,
   });
   const toggleScoreboard = overlayToggle({
@@ -339,19 +338,19 @@ function hkc({
     });
   }
 
-  const idle = obsScene({ title: 'Idle', collection, sceneName: idleScene });
-  const player1 = obsScene({ title: 'Player 1', collection, sceneName: 'player 1' });
-  const player2 = obsScene({ title: 'Player 2', collection, sceneName: 'player 2' });
-  const wideShot = obsScene({ title: 'Wide', collection, sceneName: 'players' });
-  const venue = obsScene({ title: 'Venue', collection, sceneName: 'venue' });
-  const commentary = obsScene({ title: 'Commentary', collection, sceneName: commentaryScene || 'commentators' });
-  const info = obsScene({ title: 'Info', collection, sceneName: 'info' });
-  const cards = obsScene({ title: 'Cards', collection, sceneName: 'player cards' });
-  const promo = obsScene({ title: 'Promo', collection, sceneName: 'promo' });
-  const promoVid = obsScene({ title: 'Promo\nVid', collection, sceneName: 'promo video' });
-  const announce = obsScene({ title: 'Announce', collection, sceneName: 'announcement' });
-  const brb = obsScene({ title: 'Break', collection, sceneName: breakScene });
-  const goodbye = obsScene({ title: 'Goodbye', collection, sceneName: endScene });
+  const idle = obsScene({ title: 'Idle', target: 'program', sceneName: idleScene });
+  const player1 = obsScene({ title: 'Player 1', target: 'program', sceneName: 'player 1' });
+  const player2 = obsScene({ title: 'Player 2', target: 'program', sceneName: 'player 2' });
+  const wideShot = obsScene({ title: 'Wide', target: 'program', sceneName: 'players' });
+  const venue = obsScene({ title: 'Venue', target: 'program', sceneName: 'venue' });
+  const commentary = obsScene({ title: 'Commentary', target: 'program', sceneName: commentaryScene || 'commentators' });
+  const info = obsScene({ title: 'Info', target: 'program', sceneName: 'info' });
+  const cards = obsScene({ title: 'Cards', target: 'program', sceneName: 'player cards' });
+  const promo = obsScene({ title: 'Promo', target: 'program', sceneName: 'promo' });
+  const promoVid = obsScene({ title: 'Promo\nVid', target: 'program', sceneName: 'promo video' });
+  const announce = obsScene({ title: 'Announce', target: 'program', sceneName: 'announcement' });
+  const brb = obsScene({ title: 'Break', target: 'program', sceneName: breakScene });
+  const goodbye = obsScene({ title: 'Goodbye', target: 'program', sceneName: endScene });
 
   const toggleCommentators = overlayToggle({
     title: 'Toggle\nCommentator\nNames',
@@ -364,7 +363,7 @@ function hkc({
   const game = games[0];
   const scoreboard = obsScene({
     title: game.name,
-    collection,
+    target: 'program',
     sceneName: game.scoreboardScene,
   });
   const toggleScoreboard = overlayToggle({
@@ -424,7 +423,7 @@ function prepActions(games, obsCollection, breakScene, twitchAccountId, eventNam
     games.map((game, index) => {
       const gameBreak = obsScene({
         title: `Pre-${game.name}`,
-        collection: obsCollection,
+        target: 'program',
         sceneName: game.breakScene || breakScene,
       });
       const twitchUpdate = twitchTitle({
