@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const { readFileSync } = require('fs');
+const { resolve, dirname } = require('path');
 const { exit } = require('process');
 const {
   obsScene,
@@ -8,7 +9,9 @@ const {
   hotkey,
   twitchTitle,
   webRequestHttp,
-  webRequestWebSocket
+  webRequestWebSocket,
+  obsStudioMode,
+  open
 } = require('./lib/actions');
 const { profile, folder } = require('./lib/profile');
 const { writeToDisk } = require('./lib/writeToDisk');
@@ -58,6 +61,7 @@ const nextPromoHotkey = hotkey({
  *   eventName: string,
  *   twitchAccountId: string,
  *   obsCollection: string,
+ *   crossfadeScript?: string,
  *   idleScene: string,
  *   commentaryScene?: string,
  *   commentarySource?: string,
@@ -86,6 +90,7 @@ function generateProfiles({
   eventName,
   twitchAccountId,
   obsCollection: collection,
+  crossfadeScript,
   idleScene,
   commentaryScene = 'commentators',
   commentarySource,
@@ -96,12 +101,14 @@ function generateProfiles({
   const defaultIdle = obsScene({ title: 'Idle', target: 'program', sceneName: idleScene });
   const brb = obsScene({ title: 'BRB', target: 'program', sceneName: breakScene });
   const goodbye = obsScene({ title: 'Goodbye', target: 'program', sceneName: endScene });
+  const players = obsScene({ title: 'Players', target: 'program', sceneName: 'players' });
   const wideShot = obsScene({ title: 'Venue', target: 'program', sceneName: 'venue' });
   const commentary = obsScene({ title: 'Commentary', target: 'program', sceneName: commentaryScene });
   const info = obsScene({ title: 'Info', target: 'program', sceneName: 'info' });
   const promo = obsScene({ title: 'Promo', target: 'program', sceneName: 'promo' });
   const shill = obsScene({ title: 'Shill', target: 'program', sceneName: 'shill' });
   const replay = obsScene({ title: 'Replay', target: 'program', sceneName: 'replay' });
+  const crossfade = crossfadeScript ? open({ title: 'Crossfade', path: resolve(dirname(configFile), crossfadeScript)}) : null;
 
   const toggleCommentators = overlayToggle({
     title: 'Toggle\nCommentator\nNames',
@@ -148,8 +155,8 @@ function generateProfiles({
       sceneName: game.idleScene,
     });
     const actions = [
-      ...repeat(deviceHeight - 3, [null, replay]),
-      [null, commentary, toggleCommentators, promo, nextPromoHotkey],
+      ...repeat(deviceHeight - 3, [null, replay, crossfade, obsStudioMode({})]),
+      [players, commentary, toggleCommentators, promo, nextPromoHotkey],
       [toggleScoreboard, wideShot, detocsStopRecording, shill, detocsScreenshot],
       [scoreboard, idle, detocsStartRecording, info, detocsClip15s],
     ];
