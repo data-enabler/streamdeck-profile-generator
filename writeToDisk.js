@@ -25,6 +25,7 @@ async function writeToDisk({
   }
   const filename = `${mainProfile.manifest.Name}.streamDeckProfile`;
   zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
+    // @ts-ignore This is what jszip's documentation says to do, and it works
     .pipe(createWriteStream(filename))
     .on('finish', () => console.log(`${filename} created`));
 }
