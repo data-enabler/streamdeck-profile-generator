@@ -72,6 +72,7 @@ const nextPromoHotkey = hotkey({
  *     title: string,
  *     scoreboardId?: string,
  *     twitchId: string,
+ *     twitchGameId?: string,
  *     scoreboardScene: string,
  *     scoreboardSource?: string,
  *     idleScene?: string,
@@ -120,7 +121,6 @@ function generateProfiles({
 
   const prepActions1 = prepActions(
     games.slice(0, deviceWidth),
-    collection,
     breakScene,
     twitchAccountId,
     eventName,
@@ -129,7 +129,6 @@ function generateProfiles({
   const prepFolder1 = profile({ name: 'Prep', actions: prepActions1});
   const prepActions2 = prepActions(
     games.slice(deviceWidth, deviceWidth * 2),
-    collection,
     breakScene,
     twitchAccountId,
     eventName,
@@ -425,9 +424,27 @@ function overlayToggle({
     || null;
 }
 
-function prepActions(games, obsCollection, breakScene, twitchAccountId, eventName, stopRecording) {
+/**
+ * @param {{
+ *   name: string,
+ *   title: string,
+ *   scoreboardId?: string,
+ *   twitchId: string,
+ *   twitchGameId?: string,
+ *   scoreboardScene: string,
+ *   scoreboardSource?: string,
+ *   idleScene?: string,
+ *   breakScene?: string,
+ * }[]} games
+ * @param {string} breakScene
+ * @param {string} twitchAccountId
+ * @param {string} eventName
+ * @param {Action} stopRecording
+ * @returns {(Action | null)[][]}
+ */
+function prepActions(games, breakScene, twitchAccountId, eventName, stopRecording) {
   const prepActions = transpose(
-    games.map((game, index) => {
+    games.map((game) => {
       const gameBreak = obsScene({
         title: `Pre-${game.name}`,
         target: 'program',
@@ -438,6 +455,7 @@ function prepActions(games, obsCollection, breakScene, twitchAccountId, eventNam
         accountId: twitchAccountId,
         streamTitle: `${eventName}: ${game.title}`,
         streamGame: game.twitchId,
+        streamGameId: game.twitchGameId,
       });
       return [null, gameBreak, twitchUpdate];
     })
