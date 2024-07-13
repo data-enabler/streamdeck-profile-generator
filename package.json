@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/data-enabler/streamdeck-profile-generator#readme",
   "dependencies": {
-    "jszip": "^3.7.1"
+    "jszip": "^3.10.1",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/node": "^12.20.55"
