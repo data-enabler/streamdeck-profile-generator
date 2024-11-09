@@ -1,6 +1,6 @@
 const { resolve, dirname } = require('path');
 
-const { obsScene, back, obsStudioMode, open } = require('../lib/actions');
+const { obsScene, back, obsStudioMode, open, twitchTitle, twitchChatMessage } = require('../lib/actions');
 const { repeat } = require('../lib/arrays');
 const { profile, folder } = require('../lib/profile');
 
@@ -55,6 +55,11 @@ function generateProfiles({
   const info = obsScene({ title: 'Info', target: 'program', sceneName: 'info' });
   const promo = obsScene({ title: 'Promo', target: 'program', sceneName: 'promo' });
   const shill = obsScene({ title: 'Shill', target: 'program', sceneName: 'shill' });
+  const shillMsg = twitchChatMessage({
+    title: "Matcherino",
+    accountId: twitchAccountId,
+    message: "!m",
+  });
   const replay = obsScene({ title: 'Replay', target: 'program', sceneName: 'replay' });
   const crossfade = crossfadeScript ? open({ title: 'Crossfade', path: resolve(dirname(configFile), crossfadeScript) }) : null;
   const studioMode = obsStudioMode({ title: 'Studio\nMode' });
@@ -103,7 +108,7 @@ function generateProfiles({
     });
     const actions = [
       [back(), replay, detocsIncrementP1(), detocsIncrementP2(), detocsStartGroup(), detocsEndGroup(), brb, goodbye],
-      [players, players2, commentary, toggleCommentators],
+      [players, players2, commentary, toggleCommentators, shillMsg],
       [toggleScoreboard, wideShot, detocsStopRecording(), info, shill, promo, nextPromoHotkey()],
       [scoreboard, idle, detocsStartRecording(), crossfade, detocsScreenshot(), detocsClip15s(), null, studioMode],
     ];
