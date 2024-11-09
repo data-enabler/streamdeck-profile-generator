@@ -1,17 +1,23 @@
-const { resolve, dirname } = require('path');
-
-const { obsScene, back, obsStudioMode, open } = require('../lib/actions');
+const { obsScene, back } = require('../lib/actions');
 const { repeat } = require('../lib/arrays');
 const { profile, folder } = require('../lib/profile');
 
-const { detocsStopRecording, nextPromoHotkey, detocsScreenshot, detocsStartRecording, detocsClip15s, overlayToggle, prepActions, parseConfig } = require('./lp-common');
+const {
+  detocsStopRecording,
+  nextPromoHotkey,
+  detocsScreenshot,
+  detocsStartRecording,
+  detocsClip15s,
+  overlayToggle,
+  prepActions,
+  parseConfig,
+} = require('./lp-common');
 
 /** @typedef {import('../lib/profile').Profile} Profile */
 /** @typedef {import('../lib/profile').Profiles} Profiles */
 /** @typedef {import('./lp-common').LpConfig} LpConfig */
 
 const DEVICE_WIDTH = 5;
-const DEVICE_HEIGHT = 3;
 
 /**
  * @param {{parsedConfig: LpConfig, configFile: string}} params
@@ -23,7 +29,6 @@ function generateProfiles({
     eventName,
     twitchAccountId,
     obsCollection: collection,
-    crossfadeScript,
     idleScene,
     commentaryScene = 'commentators',
     commentarySource,
@@ -31,7 +36,6 @@ function generateProfiles({
     endScene,
     games,
   },
-  configFile,
 }) {
   const defaultIdle = obsScene({ title: 'Idle', target: 'program', sceneName: idleScene });
   const brb = obsScene({ title: 'BRB', target: 'program', sceneName: breakScene });
@@ -42,8 +46,6 @@ function generateProfiles({
   const info = obsScene({ title: 'Info', target: 'program', sceneName: 'info' });
   const promo = obsScene({ title: 'Promo', target: 'program', sceneName: 'promo' });
   const shill = obsScene({ title: 'Shill', target: 'program', sceneName: 'shill' });
-  const replay = obsScene({ title: 'Replay', target: 'program', sceneName: 'replay' });
-  const crossfade = crossfadeScript ? open({ title: 'Crossfade', path: resolve(dirname(configFile), crossfadeScript) }) : null;
 
   const toggleCommentators = overlayToggle({
     title: 'Toggle\nCommentator\nNames',
@@ -88,7 +90,6 @@ function generateProfiles({
       sceneName: game.idleScene,
     });
     const actions = [
-      ...repeat(DEVICE_HEIGHT - 3, [null, replay, crossfade, obsStudioMode({})]),
       [players, commentary, toggleCommentators, promo, nextPromoHotkey()],
       [toggleScoreboard, wideShot, detocsStopRecording(), shill, detocsScreenshot()],
       [scoreboard, idle, detocsStartRecording(), info, detocsClip15s()],
@@ -100,7 +101,6 @@ function generateProfiles({
   const mainProfile = profile({
     name, actions: [
       [folder(prepFolder1), folder(prepFolder2), ...repeat(DEVICE_WIDTH - 5, null), detocsStopRecording(), brb, goodbye],
-      ...repeat(DEVICE_HEIGHT - 3, []),
       gameProfiles.slice(DEVICE_WIDTH, DEVICE_WIDTH * 2).map(folder),
       gameProfiles.slice(0, DEVICE_WIDTH).map(folder),
     ]

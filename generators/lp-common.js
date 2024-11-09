@@ -71,6 +71,18 @@ const detocsScreenshot = () => webRequestHttp({
   url: 'http://localhost:58590/screenshot',
 });
 
+const detocsIncrementP1 = () => webRequestHttp({
+  title: 'P1++',
+  method: 'POST',
+  url: 'http://localhost:58586/incrementScore?player=1',
+});
+
+const detocsIncrementP2 = () => webRequestHttp({
+  title: 'P2++',
+  method: 'POST',
+  url: 'http://localhost:58586/incrementScore?player=2',
+});
+
 const nextPromoHotkey = () => hotkey({
   title: 'Next\nPromotion',
   hotkey: {
@@ -182,6 +194,8 @@ module.exports = {
   detocsEndGroup,
   detocsClip15s,
   detocsScreenshot,
+  detocsIncrementP1,
+  detocsIncrementP2,
   nextPromoHotkey,
   overlayToggle,
   prepActions,

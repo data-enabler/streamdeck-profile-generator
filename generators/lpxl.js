@@ -4,7 +4,20 @@ const { obsScene, back, obsStudioMode, open } = require('../lib/actions');
 const { repeat } = require('../lib/arrays');
 const { profile, folder } = require('../lib/profile');
 
-const { detocsStopRecording, nextPromoHotkey, detocsScreenshot, detocsStartRecording, detocsClip15s, overlayToggle, prepActions, parseConfig, detocsStartGroup, detocsEndGroup } = require('./lp-common');
+const {
+  detocsStopRecording,
+  nextPromoHotkey,
+  detocsScreenshot,
+  detocsStartRecording,
+  detocsClip15s,
+  overlayToggle,
+  prepActions,
+  parseConfig,
+  detocsStartGroup,
+  detocsEndGroup,
+  detocsIncrementP1,
+  detocsIncrementP2,
+} = require('./lp-common');
 
 /** @typedef {import('../lib/profile').Profile} Profile */
 /** @typedef {import('../lib/profile').Profiles} Profiles */
@@ -89,7 +102,7 @@ function generateProfiles({
       sceneName: game.idleScene,
     });
     const actions = [
-      [back(), replay, null, null, detocsStartGroup(), detocsEndGroup(), brb, goodbye],
+      [back(), replay, detocsIncrementP1(), detocsIncrementP2(), detocsStartGroup(), detocsEndGroup(), brb, goodbye],
       [players, players2, commentary, toggleCommentators],
       [toggleScoreboard, wideShot, detocsStopRecording(), info, shill, promo, nextPromoHotkey()],
       [scoreboard, idle, detocsStartRecording(), crossfade, detocsScreenshot(), detocsClip15s(), null, studioMode],
